@@ -13,7 +13,13 @@ however, both do not reduce down to truth logic. You get a reduction to FALSE &&
     Error is presented when trying to find the succ(2 4) since succ only takes in one argument
     Therefore it would have to be either 2 or 4 but not both.
 
-4. f (max (f 3)) 8 - incorrect arguments inside function
+4. "I have " ++ (f 2) ++ " dogs"
+
+    Returns a false statement since f(2) is not properly cast as a string to combine with the rest of the sentence. You would need to
+    cast show (f 2) to properly print out that "I have 6 dogs" otherwise, you cannot combine intergers with strings
+
+
+5. f (max (f 3)) 8 - incorrect arguments inside function
 
     - max requires two arguments however it is only presented one which is the evaluation of the f(x) function
 
