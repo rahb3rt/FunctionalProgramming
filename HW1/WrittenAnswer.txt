@@ -1,0 +1,19 @@
+1. Answer is false, since (4 <= 2) is false. Although  (True || (8^2 == 3)) is true
+however, both do not reduce down to truth logic. You get a reduction to FALSE && TRUE != TRUE
+
+2. 8 * (succ 3) + (max 40 15) = 72
+    Since:
+        succ 3 = 4;
+        4 * 8 = 32;
+        max(40 15) = 40;
+        sum(40 32) = 72; QED
+
+3. 5 + (succ 2 4)- false logic no answer
+
+    Error is presented when trying to find the succ(2 4) since succ only takes in one argument
+    Therefore it would have to be either 2 or 4 but not both.
+
+4. f (max (f 3)) 8 - incorrect arguments inside function
+
+    - max requires two arguments however it is only presented one which is the evaluation of the f(x) function
+
