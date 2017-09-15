@@ -1,0 +1,24 @@
+1.) The answer is 6
+    - if ((f 4) > 3) = true
+    - then f 2 = 6
+
+2.) Answer is [3,4]
+    - head[[2,3,4]] = [2,3,4] since element one in array is [2,3,4]
+    - tail [2,3,4] = [3,4] since it cuts off the first element of the array
+    and prints out the other two
+
+3.) Answer is take take 15[6..]
+    - take 20[1..] prints out 1 through 20
+    - drop 5, cuts off the first five intergers in array
+
+4.) Answer is [[4,4,4],[4,4,4],[4,4,4]]
+    - reapeat 4 prints out 4s indefinitely
+    - take 3 takes the frist 3 4's and puts them into an array
+    - repeat repeats the array [4,4,4] indefintiely
+    - take 3 takes the first three [4,4,4] and prints them out
+
+5.) Answe is 'hiiii'
+    - repeats i indefinitely
+    - combines the char h with the characters i's,
+    - takes the first 5 characters in the array and prints them out
+
