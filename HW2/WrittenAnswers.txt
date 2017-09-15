@@ -17,7 +17,7 @@
     - repeat repeats the array [4,4,4] indefintiely
     - take 3 takes the first three [4,4,4] and prints them out
 
-5.) Answe is 'hiiii'
+5.) Answer is 'hiiii'
     - repeats i indefinitely
     - combines the char h with the characters i's,
     - takes the first 5 characters in the array and prints them out
