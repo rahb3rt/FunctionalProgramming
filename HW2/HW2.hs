@@ -19,7 +19,6 @@ mirrorRangeNoZero x = take (x) [-x..] ++ [1..x]
 
 evenRange x y = filter even [x..y]
 
-chopper x  = iterate tail (iterate init x !! 3) !! 3
+chopper x =  take (length(x)-6) (drop 3 x)
 
-takeTwice n l = takeTwice n l =  (take n l) ++ (take n l) 
-    --length(takeTwice n l) = 2n
+takeTwice n l = (take n l) ++ (take n l) 
