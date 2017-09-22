@@ -1,0 +1,32 @@
+1.) snd (head (fst ("hello", 15)))
+
+    -fst returns "hello"
+    -head takes "h" from "hello"
+    -snd returns an error since it does not contain a second
+    argument to choose from
+
+2.) snd (fst [(1,2),(4,6)])
+
+    -fst returns an error because it only contains a single
+    argument. To fix it you would have to add [] these kinds
+    of brackets between fst([1,2], [4,6]) so the function
+    nows it is reading in two lists which implies two
+    arguments, which then passes those two arguments to the
+    secondary snd function
+
+3.) sum [4 * x | x <- [1..5]]
+
+    - sum of 4*x from 1 to 5 = 60
+
+4.) maximum [3 * length x | x <- ["fake", "it", "to",
+"make", "it"] ]
+
+    - returns the maximum value from a list of 3 * the
+      length of the word.
+    - since make and fake are both four letter words the max
+      value that is attainable is 12 the lowest is 6
+
+5.) product [ x | x <- [1..20], mod x 4 == 0]
+
+    - The product of all numbers from 1 to 20 where the
+      condition x mod 4 == 0 equals true
