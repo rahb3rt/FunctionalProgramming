@@ -1,0 +1,32 @@
+1.) f [3..8]
+    - In order for the application to run it requires a
+      single argument '[3..8]' provides an array of 5
+      numbers which surpass the limit of input inside the
+      function
+
+2.) [ f x | x <- [3..8] ]
+
+    - ["creed","creed","hootie","nickelback","nickelback","nickelback"]
+    - Takes in each number from 3..8 and runs it against the
+      function each number at a time since in this form the
+      function can take an array and iterate through it
+
+3.) g [3..8]
+
+    -Takes the first element of the list and if the first
+    element is equal to three it equals 8
+
+4.) [ g x | x <- [3..8] ]
+
+    - Spits out an error since the argument required for the
+      g function takes in a list and not individual numbers
+      in order to take teh functino and takes its first
+      element but individual elements do not have lists
+
+5.) g[]
+
+    - Returns an error since the list that is being input is
+      blank and there is no function currently that handles
+      a blank list input
+
+
