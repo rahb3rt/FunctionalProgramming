@@ -57,7 +57,8 @@ isPrime x
 
 isComposite :: Integral a => a -> Bool
 isComposite x
-    | x <= 1 = (length(divs x) /= 2)
-    | x > 1 = (length(divs x) >= 2)
+    | x <= 2 = (length(divs x) /= 2)
+    | x > 2 = (length(divs x) > 2)
 
-
+--Fixed isComposite since 2 is not a composite number and the first 
+--composite number would be 4
