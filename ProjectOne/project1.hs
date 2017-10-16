@@ -1,0 +1,10 @@
+display :: (Int,Int,[Bool]) -> IO()
+display (_,0,_) = return ()
+display (w,h,ps) = dr (take w ps) >> display (w,h-1, drop w ps)
+
+dr :: [Bool] -> IO()
+dr [] = putChar '\n'
+dr (p:ps) = (putChar (if p then '0' else '.')) >> dr ps
+
+thumb :: (Int,Int,[Bool])
+thumb =(16,20,[True,True,True,True,True,True,True,True,True,True,True,True,True,True,True,True,True,False,False,False,False,False,False,False,False,False,False,False,False,False,False,True,True,False,False,False,False,False,False,False,False,False,False,False,False,False,False,True,True,False,False,False,False,True,True,False,False,False,False,False,False,False,False,True,True,False,False,False,True,False,True,False,False,False,False,False,False,False,False,True,True,False,False,False,True,False,False,True,False,False,False,False,False,False,False,True,True,False,False,False,True,False,False,True,False,False,False,False,False,False,False,True,True,False,False,False,True,False,True,False,False,False,False,False,False,False,False,True,True,False,False,False,True,False,False,True,True,True,True,True,False,False,False,True,True,False,False,False,True,False,False,False,True,False,False,False,True,False,False,True,True,False,True,True,True,False,False,False,False,True,True,True,False,False,False,True,True,False,False,False,False,False,False,False,True,False,False,False,True,False,False,True,True,False,False,False,False,False,False,False,False,True,True,True,False,False,False,True,True,False,False,False,False,False,False,False,True,False,False,False,True,False,False,True,True,False,True,True,True,False,False,False,False,True,True,True,False,False,False,True,True,False,False,False,True,False,False,False,True,False,False,True,False,False,False,True,True,False,False,False,False,True,True,True,True,True,True,False,False,False,False,True,True,False,False,False,False,False,False,False,False,False,False,False,False,False,False,True,True,False,False,False,False,False,False,False,False,False,False,False,False,False,False,True,True,True,True,True,True,True,True,True,True,True,True,True,True,True,True,True])
