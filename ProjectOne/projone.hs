@@ -1,3 +1,5 @@
+-- Robert Davis; Project One
+
 display :: (Int,Int,[Bool]) -> IO()
 display (_,0,_) = return ()
 display (w,h,ps) = dr (take w ps) >> display (w,h-1, drop w ps)

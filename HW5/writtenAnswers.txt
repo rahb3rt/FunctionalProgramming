@@ -1,0 +1,19 @@
+1.  f [3,4,5]
+    Returns a non exhausted pattern since it has no rule for
+    termination when the array reaches null
+
+2. g 5 = 56
+    5 gets evaluated at g x, which then repeats recursivly
+    until g 0 which equals 1. 25 + 16 + 9 + 4 + 1 + 1
+
+3. map (>3) [1..5] [ false, false, false, true, true]
+
+    Checks all values from 1 to 5 and if they are greater than 3
+    returns true, else false.
+
+4. map (drop 1) (map (take 3) ["Hello","mother","dear"])
+    ["el","ot","ea"]
+
+    Takes presenence on the individual elements first
+    instead of on the array itself to return the the mapping of
+    the individual elements instead of the whole array.
