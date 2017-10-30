@@ -1,0 +1,31 @@
+1.) map (+5) (filter even [1..4])
+
+    - Filters all evens so 2 and 4
+    - Adds 5 to both values and returns a list
+    - 2 + 5 = 7, 4 + 5 = 9
+    [7,9]
+
+2.) map ($2) (map (.succ) [succ, pred, (*(-1)), (*2)])
+
+    - $2 * (succ.succ) = 2 * ( 1 + 1) = 4
+    - $2 * (pred.succ) = 2 * (1 + -1) = 2
+    - $2 * (-1).succ = (2 * (-1) - 1) = -3
+    - $2 * (2).succ = 2 * 2 + 2 = 6
+
+
+3.) map (take 4) ["haskell","curry","is","my","father"]
+
+    - Takes 4 characters from every element in the list
+
+4.)   filter (==True) (map (even . length) ["haskell","curry","is","my","father"])
+
+    - Takes an array of 5 elements, and gets the length of each element
+    - Filters those elements based on even numbers
+    - Returns a list of all values false and true
+    - Filter is applied to get all True values only
+    - returns [true, true]
+
+5.) map (\x -> x*4 + 2) [1..5]
+
+    - Takes each value of comprehension list, and plugs it into the function
+    - [6, 10, 14, 18, 22]
