@@ -1,0 +1,35 @@
+1.) foldl (++) "" ["I", "love", "pizza"]
+
+    - Combines all terms into a single word without a space in between
+    - Ilovepizza
+
+2.) foldr ($) 3 [succ, (^2), pred]
+
+    - Takes three as the variable and feeds it through pred = 2
+    - Takes the result and squares it = 4
+    - Takes the succ of 4 = 5
+
+3.) foldr (\x y -> 2*x+3*y) 1 [1,2,3,4]
+
+    - 2 (4) + 3 (1) = 11
+    - 2 (3) + 3 (11) = 39
+    - 2 (2) + 3 (39) = 4 + 117 = 121
+    - 2 (1) + 3 (121) = 365
+
+4.) foldl (\x y -> 2*x+3*y) 1 [1,2,3,4]
+
+    - Recursively takes the result and plugs it back into the function
+        - 2(1) +  3(1) = 5
+        - 2(5) + 3(2) = 16
+        - 2(16) + 3(3) = 41
+        - 2(41) + 3(4) = 82 + 12 = 94
+
+5.) foldr map [1,2,3] [(*2), pred, (^2), succ]
+
+    - Maps each value from list to list of functions
+    - Takes the first value from the list
+    - Runs it through succ = 2
+    - Runs it through ^2 = 4
+    - Runs it through pred = 3
+    - Then *2 = 6
+    - For each value in list [6,16,30]
