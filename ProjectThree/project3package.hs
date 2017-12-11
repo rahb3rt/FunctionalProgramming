@@ -5,7 +5,7 @@ import qualified Codec.Picture.Types as CPT
 import qualified Data.Vector.Storable as DVS
 import qualified Data.ByteString.Lazy as DBL
 
-data Pixel = RGB Int Int Int deriving (Show,Eq)
+data Pixel = RGB Int Int Int deriving (Show,Eq, Ord)
 data Image = Im Int Int [Pixel] deriving (Show,Eq)
 
 listToTrips :: [Int] -> [Pixel]
