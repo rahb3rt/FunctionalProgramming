@@ -1,8 +1,71 @@
+{--Robert Davis--}
+
 import Project3package
 import System.Random
 import System.Process
 import System.Directory
 import Data.Char
+import Data.List.Split
+import Data.List
+
+fir :: Image -> Int
+fir (Im a _ _) = a
+
+scd :: Image -> Int
+scd (Im _ a _) = a
+
+trd :: Image -> [Pixel]
+trd (Im _ _ a) = a
+
+getFirst :: Image -> Int
+getFirst (Im x _ _) = x
+
+getSecond :: Image -> Int
+getSecond (Im _ x _) = x
+
+getEnd :: [a] -> [a] 
+getEnd x = reverse (tail (reverse x))
+
+border :: Pixel -> Image -> Image
+border x y = 
+    (colStackLast  (take (getSecond y + 2) (repeat (x)))
+    (colStackFirst (take (getSecond y + 2) (repeat (x))) 
+    (rowStackLast  (take (getFirst y) (repeat (x))) 
+    (rowStackFirst (take (getFirst y) (repeat (x))) y))))
+
+thickBorder :: (Eq t, Num t) => Image -> Pixel -> t -> Image
+thickBorder x y 0     = x
+thickBorder x y times = thickBorder (border (y) x) y  (times - 1)
+
+rotateCW :: [[a]] -> [[a]]
+rotateCW = map reverse . transpose 
+rotate image = (Im (scd image) (fir image) (concat(rotateCW (blocks image))))
+
+blocks :: Image -> [[Pixel]]
+blocks (Im x _ y) = (chunksOf x y)
+   
+dropFirstCol :: Image -> Image
+dropFirstCol x = (Im (getFirst x-1) (getSecond x)
+    (concat (map (tail) (blocks x))))
+      
+dropLastCol :: Image -> Image
+dropLastCol x = (Im (getFirst x -1) (getSecond x)
+    (concat (map (getEnd) (blocks x))))
+         
+colStackFirst :: [Pixel] -> Image -> Image 
+colStackFirst x y = (Im (getFirst y + 1)  
+    (getSecond y) (concat (zipWith (:) x (blocks y))))    
+            
+colStackLast :: [Pixel] -> Image -> Image 
+colStackLast x y = (Im (getFirst y + 1) (getSecond y)
+    (concat (map (reverse) (zipWith (:) x (map (reverse) (blocks y))))))
+
+rowStackFirst :: [Pixel] -> Image -> Image
+rowStackFirst stack image = (Im (fir image) (scd image + 1) (stack ++ trd image))
+   
+rowStackLast :: [Pixel] -> Image -> Image
+rowStackLast stack image = (Im (fir image) (scd image + 1) (trd image ++ stack))
+
 
 randomL :: [a] -> IO a
 randomL l = do
@@ -10,6 +73,7 @@ randomL l = do
     let i = fst (randomR (0,length l-1) seed)
     return $ l!!i
 
+randomImage :: Int -> Int -> FilePath -> IO ()
 randomImage x y name = do
 
     let pixels = []
@@ -19,7 +83,7 @@ randomImage x y name = do
 
     writeJPG name image
 
-
+createImage :: Int -> Int -> Int -> [Pixel] -> IO Image
 createImage x y i pixels = do 
 
     if i < (x * y) then do 
@@ -36,7 +100,7 @@ createImage x y i pixels = do
 
         return (Im x y pixels)
 
-
+createPixel :: IO Pixel
 createPixel = do
 
     r <- randomL [0..255]
@@ -47,14 +111,25 @@ createPixel = do
 
     return pixel
 
+fstP :: Pixel -> Int
 fstP (RGB a _ _) = a
+
+sndP :: Pixel -> Int
 sndP (RGB _ a _) = a
+
+trdP :: Pixel -> Int
 trdP (RGB _ _ a) = a
 
+fstI :: Image -> Int
 fstI (Im a _ _) = a
+
+sndI :: Image -> Int
 sndI (Im _ a _) = a
+
+trdI :: Image -> [Pixel]
 trdI (Im _ _ a) = a
 
+darken :: Int -> FilePath -> IO () 
 darken delta path = do
 
     image <- readJPG path
@@ -65,6 +140,7 @@ darken delta path = do
 
     writeJPG path picture
 
+darkenP :: Monad m => Int -> [Pixel] -> [Pixel] -> Int -> Int -> Int -> m Image
 darkenP delta pixels dPixels i x y = do
 
     if i < length pixels then do
@@ -85,7 +161,6 @@ darkenP delta pixels dPixels i x y = do
         return (Im x y dPixels)
 
 
-
 deltaCheck :: Int-> Int -> Int
 deltaCheck delta channel = 
   if (channel + delta) > 255 then 255
@@ -95,6 +170,7 @@ deltaCheck delta channel =
           
       else channel + delta
           
+colorSwap :: FilePath -> IO ()
 colorSwap path = do
 
     image <- readJPG path
@@ -127,11 +203,26 @@ swap pixels swapPixels i x y = do
 
         return (Im x y swapPixels)
 
+swapped :: [a] -> IO [a]
 swapped x = if length x < 2 then return x else do
     i <- randomRIO (0, length(x)-1)
     r <- swapped (take i x ++ drop (i+1) x)
     return (x!!i : r)
 
+strips n path output= do
+
+    image <- readJPG path
+    let pixels = trdI image
+    let tmpPixels = chunksOf (fstI image) pixels
+    let pixels = chunksOf ((sndI image) `div` n) tmpPixels
+    pixels <- swapped (pixels)
+    let tmpPixels = concat (map concat pixels)
+    let tmpImage = Im (fstI image) (sndI image) tmpPixels
+
+    writeJPG output tmpImage
+    
+
+noisy :: FilePath -> IO ()
 noisy path = do
 
     image <- readJPG path
@@ -179,6 +270,7 @@ swapNoisy pixels swapPixels i x y = do
 
         return (Im x y swapPixels)
 
+view :: Image -> IO ()
 view image = do
 
     let i = 0
@@ -186,7 +278,8 @@ view image = do
 
     writeJPG path image
     callCommand ("open " ++ path)
-  
+
+fileName :: (Show a, Num a) => a -> IO [Char]
 fileName i = do
 
     paths <- getDirectoryContents "."
@@ -200,12 +293,14 @@ fileName i = do
     
         return (".~" ++ show(i) ++ ".jpg")
 
+cleanup :: IO ()
 cleanup = do
 
     let i = 0
     output <- clean i
     putStrLn output
 
+clean :: (Show t, Num t) => t -> IO [Char]
 clean i = do
 
     paths <- getDirectoryContents "."
@@ -220,10 +315,13 @@ clean i = do
 
         return "Ok I did it"
 
+pictureTime :: IO ()
 pictureTime = do
 
-    putStrLn "Enter filepath to image"
-    path <- getLine
+    putStrLn "Enter name to image"
+    name <- getLine
+
+    let path = name ++ ".jpg"
 
     dfe <- doesFileExist path
 
@@ -236,9 +334,13 @@ pictureTime = do
         putStrLn "The file does not exist, try again"
         pictureTime
 
+picture :: String -> IO ()
 picture path = do
 
-    putStrLn "Choose an option from the list below:"
+    putStrLn "Your current image is:\n"
+    putStrLn path
+    putStrLn "\n"
+    putStrLn "Choose an option from the list below:\n"
     putStrLn "View, Image"
     putStrLn "Open, New Image"
     putStrLn "Darken, Make Image Darker"
@@ -246,9 +348,10 @@ picture path = do
     putStrLn "Swap, Swap Colors in Image"
     putStrLn "Noisy, Make Image Noisy"
     putStrLn "Rotate, Rotate Image 90 degrees"
-    putStrLn "Random, Create Random Image"
+    putStrLn "Border, Create Border for Image"
     putStrLn "Save, Image to New File"
-    putStrLn "Quit"
+    putStrLn "Strip, Swap Strips in File"
+    putStrLn "Quit\n"
     input <- getLine
         
     if (map toLower input) == "view" then do
@@ -264,12 +367,12 @@ picture path = do
 
             putStrLn "Open a new image: "
             tmpPath <- getLine 
-
-            dfe <- doesFileExist tmpPath
+            
+            dfe <- doesFileExist (tmpPath ++ ".jpg")
 
             if dfe then do
 
-                let path = tmpPath
+                let path = tmpPath ++ ".jpg"
                 putStrLn "Okay I did it"
                 picture path
 
@@ -301,8 +404,13 @@ picture path = do
                 else do 
 
                     if (map toLower input) == "swap" then do
-
+                       
+                        tmpPath <- fileName 0
+                        copyFile path tmpPath
                         colorSwap path
+                        image <- readJPG tmpPath
+                        path <- fileName 0 
+                        writeJPG path image
                         putStrLn "Ok all set"
                         picture path
  
@@ -340,28 +448,51 @@ picture path = do
 
                                     if (map toLower input) == "rotate" then do
 
+                                        image <- readJPG path
+                                        let imageTmp = rotate image
+                                        path <- fileName 0
+                                        writeJPG path imageTmp
                                         putStrLn "ok all set"
                                         picture path
                                     
                                     else do 
 
-                                        if (map toLower input) == "random" then do
-                                            
-                                            putStrLn "Please input name for random image:"
-                                            name <- getLine
-                                            let path = name ++ ".jpg"
-                                            putStrLn "Please input the height: "
-                                            y<- getLine
-                                            putStrLn "Please input the width:"
-                                            x<- getLine
-                                            randomImage (read x::Int) (read y::Int) path 
+                                        if (map toLower input) == "border" then do
+                                          
+                                            putStrLn "What Color Border:"
+                                            putStrLn "Type in Red value:"
+                                            r <- getLine
+                                            putStrLn "Type in Green value:"
+                                            g <- getLine
+                                            putStrLn "Type in Blue value:"
+                                            b <- getLine
+                                            putStrLn "Thickness of the border:"
+                                            n <- getLine
+
+                                            let pixel = (RGB (read r::Int) (read g::Int) (read b::Int))
+                                            image <- readJPG path
+                                            let imageTmp = thickBorder image pixel (read n::Int) 
+                                            path <- fileName 0
+                                            writeJPG path imageTmp
                                             putStrLn "Ok all set"
                                             picture path
  
                                         else do
 
-                                            putStrLn "I don't understand"
-                                            picture path
+                                            if (map toLower input) == "strip" then do
+                                            
+                                                putStrLn "How many strips would you like?"
+                                                n <- getLine
+                                                tmpPath <- fileName 0
+                                                strips (read n::Int) path tmpPath
+                                                let path = tmpPath
+                                                putStrLn "okay I did it"
+                                                picture path
+
+                                            else do
+                                            
+                                                putStrLn "I don't understand"
+                                                picture path
 
 
 
