@@ -2,6 +2,7 @@ import Project3package
 import System.Random
 import System.Process
 import System.Directory
+import Data.Char
 
 randomL :: [a] -> IO a
 randomL l = do
@@ -219,4 +220,152 @@ clean i = do
 
         return "Ok I did it"
 
+pictureTime = do
+
+    putStrLn "Enter filepath to image"
+    path <- getLine
+
+    dfe <- doesFileExist path
+
+    if dfe then do
+
+       picture path
+
+    else do
+
+        putStrLn "The file does not exist, try again"
+        pictureTime
+
+picture path = do
+
+    putStrLn "Choose an option from the list below:"
+    putStrLn "View, Image"
+    putStrLn "Open, New Image"
+    putStrLn "Darken, Make Image Darker"
+    putStrLn "Lighten, Make Image Lighter"
+    putStrLn "Swap, Swap Colors in Image"
+    putStrLn "Noisy, Make Image Noisy"
+    putStrLn "Rotate, Rotate Image 90 degrees"
+    putStrLn "Random, Create Random Image"
+    putStrLn "Save, Image to New File"
+    putStrLn "Quit"
+    input <- getLine
+        
+    if (map toLower input) == "view" then do
+
+        putStrLn path
+        viewImage <- readJPG path
+        view viewImage
+        picture path
+
+    else do
+
+        if (map toLower input) == "open" then do
+
+            putStrLn "Open a new image: "
+            tmpPath <- getLine 
+
+            dfe <- doesFileExist tmpPath
+
+            if dfe then do
+
+                let path = tmpPath
+                putStrLn "Okay I did it"
+                picture path
+
+            else do 
+
+                putStr "File does not Exist, renter command"
+                picture path
+
+        else do
+    
+            if (map toLower input) == "save" then do
+
+                putStrLn "What would you like to name the file"
+                savePath <- getLine
+                image <- readJPG path
+                let path = (savePath ++ ".jpg")
+                writeJPG path image
+                cleanup
+                picture path
+
+            else do
+    
+                if (map toLower input) == "quit" then do
+
+                    cleanup
+                    putStrLn "Bye Bye"
+                    return()
+
+                else do 
+
+                    if (map toLower input) == "swap" then do
+
+                        colorSwap path
+                        putStrLn "Ok all set"
+                        picture path
  
+                    else do
+
+                        if (map toLower input) == "darken" then do
+                                        
+                            putStrLn "By how much would you like to darken the image?"
+                            input <- getLine
+                            let delta = (-1) * (read input :: Int)
+                            darken delta path
+                            putStrLn "Ok all set"
+                            picture path
+ 
+                        else do
+
+                            if (map toLower input) == "lighten" then do
+                                
+                                putStrLn "By how much would you like to lighten the image?"
+                                input <- getLine
+                                let delta = abs (read input :: Int)
+                                darken delta path
+                                putStrLn "Ok all set"
+                                picture path
+ 
+                            else do
+
+                                if (map toLower input) == "noisy" then do
+                                    
+                                    noisy path
+                                    putStrLn "Ok all set"
+                                    picture path
+ 
+                                else do
+
+                                    if (map toLower input) == "rotate" then do
+
+                                        putStrLn "ok all set"
+                                        picture path
+                                    
+                                    else do 
+
+                                        if (map toLower input) == "random" then do
+                                            
+                                            putStrLn "Please input name for random image:"
+                                            name <- getLine
+                                            let path = name ++ ".jpg"
+                                            putStrLn "Please input the height: "
+                                            y<- getLine
+                                            putStrLn "Please input the width:"
+                                            x<- getLine
+                                            randomImage (read x::Int) (read y::Int) path 
+                                            putStrLn "Ok all set"
+                                            picture path
+ 
+                                        else do
+
+                                            putStrLn "I don't understand"
+                                            picture path
+
+
+
+
+
+
+
