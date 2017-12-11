@@ -160,7 +160,6 @@ darkenP delta pixels dPixels i x y = do
 
         return (Im x y dPixels)
 
-
 deltaCheck :: Int-> Int -> Int
 deltaCheck delta channel = 
   if (channel + delta) > 255 then 255
@@ -209,7 +208,8 @@ swapped x = if length x < 2 then return x else do
     r <- swapped (take i x ++ drop (i+1) x)
     return (x!!i : r)
 
-strips n path output= do
+strips :: Int -> FilePath -> IO [Char] 
+strips n path = do
 
     image <- readJPG path
     let pixels = trdI image
@@ -218,8 +218,11 @@ strips n path output= do
     pixels <- swapped (pixels)
     let tmpPixels = concat (map concat pixels)
     let tmpImage = Im (fstI image) (sndI image) tmpPixels
+    output <- fileName 0
 
     writeJPG output tmpImage
+
+    return output
     
 
 noisy :: FilePath -> IO ()
@@ -483,9 +486,7 @@ picture path = do
                                             
                                                 putStrLn "How many strips would you like?"
                                                 n <- getLine
-                                                tmpPath <- fileName 0
-                                                strips (read n::Int) path tmpPath
-                                                let path = tmpPath
+                                                path <- strips (read n::Int) path
                                                 putStrLn "okay I did it"
                                                 picture path
 
