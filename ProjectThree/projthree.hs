@@ -276,8 +276,7 @@ swapNoisy pixels swapPixels i x y = do
 view :: Image -> IO ()
 view image = do
 
-    let i = 0
-    path <- fileName i
+    path <- fileName 0
 
     writeJPG path image
     callCommand ("open " ++ path)
@@ -340,6 +339,9 @@ pictureTime = do
 picture :: String -> IO ()
 picture path = do
 
+    let specialChar = " !\"#$%&'()*+,-./:;<=>?@^_`{|}~"
+    let charList = ['a'..'z']
+    let allSpecial = specialChar ++ charList
     putStrLn "Your current image is:\n"
     putStrLn path
     putStrLn "\n"
@@ -356,10 +358,10 @@ picture path = do
     putStrLn "Strip, Swap Strips in File"
     putStrLn "Quit\n"
     input <- getLine
+
         
     if (map toLower input) == "view" then do
 
-        putStrLn path
         viewImage <- readJPG path
         view viewImage
         picture path
@@ -423,10 +425,18 @@ picture path = do
                                         
                             putStrLn "By how much would you like to darken the image?"
                             input <- getLine
-                            let delta = (-1) * (read input :: Int)
-                            darken delta path
-                            putStrLn "Ok all set"
-                            picture path
+
+                            if toLower (head input) `elem` allSpecial then do
+
+                                putStrLn "Needs an integer from 0 to 255 try again"
+                                picture path
+
+                            else do
+
+                                let delta = (-1) * (read input :: Int)
+                                darken delta path
+                                putStrLn "Ok all set"
+                                picture path
  
                         else do
 
@@ -434,10 +444,18 @@ picture path = do
                                 
                                 putStrLn "By how much would you like to lighten the image?"
                                 input <- getLine
-                                let delta = abs (read input :: Int)
-                                darken delta path
-                                putStrLn "Ok all set"
-                                picture path
+
+                                if toLower (head input) `elem` allSpecial then do
+
+                                    putStrLn "Needs an integer from 0 to 255 try again"
+                                    picture path
+
+                                else do
+                                
+                                    let delta = abs (read input :: Int)
+                                    darken delta path
+                                    putStrLn "Ok all set"
+                                    picture path
  
                             else do
 
@@ -465,20 +483,52 @@ picture path = do
                                             putStrLn "What Color Border:"
                                             putStrLn "Type in Red value:"
                                             r <- getLine
-                                            putStrLn "Type in Green value:"
-                                            g <- getLine
-                                            putStrLn "Type in Blue value:"
-                                            b <- getLine
-                                            putStrLn "Thickness of the border:"
-                                            n <- getLine
 
-                                            let pixel = (RGB (read r::Int) (read g::Int) (read b::Int))
-                                            image <- readJPG path
-                                            let imageTmp = thickBorder image pixel (read n::Int) 
-                                            path <- fileName 0
-                                            writeJPG path imageTmp
-                                            putStrLn "Ok all set"
-                                            picture path
+                                            if toLower (head r) `elem` allSpecial then do
+
+                                                putStrLn "Needs an integer from 0 to 255 try again"
+                                                picture path 
+
+                                            else do
+
+                                                putStrLn "Type in Green value:"
+                                                g <- getLine
+
+                                                if toLower (head g) `elem` allSpecial then do
+
+                                                    putStrLn "Needs an integer from 0 to 255 try again"
+                                                    picture path
+
+                                                else do
+
+                                                    putStrLn "Type in Blue value:"
+                                                    b <- getLine
+
+                                                    if toLower (head b) `elem` allSpecial then do
+
+                                                        putStrLn "Needs an integer try again"
+                                                        picture path
+
+                                                    else do
+                                            
+                                                        putStrLn "Thickness of the border:"
+                                                        n <- getLine
+
+                                                        if toLower (head n) `elem` allSpecial then do
+
+                                                            putStrLn "Needs an integer try again"
+                                                            picture path
+
+                                                        else do
+
+
+                                                            let pixel = (RGB (read r::Int) (read g::Int) (read b::Int))
+                                                            image <- readJPG path
+                                                            let imageTmp = thickBorder image pixel (read n::Int) 
+                                                            path <- fileName 0
+                                                            writeJPG path imageTmp
+                                                            putStrLn "Ok all set"
+                                                            picture path
  
                                         else do
 
