@@ -73,15 +73,11 @@ randomL l = do
     let i = fst (randomR (0,length l-1) seed)
     return $ l!!i
 
-randomImage :: Int -> Int -> FilePath -> IO ()
-randomImage x y name = do
+randomImage x y = do
 
-    let pixels = []
-    let i = 0
+    image <- createImage x y 0 []
 
-    image <- createImage x y i pixels
-
-    writeJPG name image
+    return image
 
 createImage :: Int -> Int -> Int -> [Pixel] -> IO Image
 createImage x y i pixels = do 
@@ -129,149 +125,81 @@ sndI (Im _ a _) = a
 trdI :: Image -> [Pixel]
 trdI (Im _ _ a) = a
 
-darken :: Int -> FilePath -> IO () 
-darken delta path = do
+darken delta image = (Im (fstI image) (sndI image) (darkenP delta (trdI image))) 
 
-    image <- readJPG path
-    let dPixels = []
+darkenP delta pixels = map (\x->deltaCheck (-1 * delta) x) pixels
 
-    let pixels = trdI image
-    picture <- darkenP delta pixels dPixels 0 (fstI image) (sndI image)
-
-    writeJPG path picture
-
-darkenP :: Monad m => Int -> [Pixel] -> [Pixel] -> Int -> Int -> Int -> m Image
-darkenP delta pixels dPixels i x y = do
-
-    if i < length pixels then do
-        
-        let r = deltaCheck delta (fstP (pixels !! i))
-        let g = deltaCheck delta (sndP (pixels !! i))
-        let b = deltaCheck delta (trdP (pixels !! i))
-        let pixel = RGB r g b
-        let tmpPixels = dPixels
-        let dPixels = tmpPixels ++ (take 1 (repeat pixel))
-        let j = i
-        let i = j + 1
-        darkenP delta pixels dPixels i x y
+deltaCheck delta pixel = (RGB 
+    (deltaCh delta (fstP pixel)) 
+    (deltaCh delta (sndP pixel)) 
+    (deltaCh delta (trdP pixel)))    
     
+deltaCh value lambda = 
 
-    else do
-
-        return (Im x y dPixels)
-
-deltaCheck :: Int-> Int -> Int
-deltaCheck delta channel = 
-  if (channel + delta) > 255 then 255
-  
-  else 
-      if (channel + delta) < 0 then 0 
-          
-      else channel + delta
-          
-colorSwap :: FilePath -> IO ()
-colorSwap path = do
-
-    image <- readJPG path
-    let swapPixels = []
-
-    let pixels = trdI image
-    picture <- swap pixels swapPixels 0 (fstI image) (sndI image)
-
-    writeJPG path picture
+    if (value + lambda) > 255 then 
+        255 
+    else 
+        if (value + lambda) < 0 then 
+            0 
+        else (value + lambda)
 
 
-swap :: [Pixel] -> [Pixel] -> Int -> Int -> Int -> IO Image
-swap pixels swapPixels i x y = do
+colorSwap image = (Im (fstI image) (sndI image) (swap (trdI image)))
 
-    if i < length pixels then do
-        
-        let r = fstP (pixels !! i)
-        let g = sndP (pixels !! i)
-        let b = trdP (pixels !! i)
-        pixel <- swapped [r, g, b]
-        let pixelsSwap = (RGB (pixel !! 0) (pixel !! 1) (pixel !! 2)) 
-        let tmpPixels = swapPixels
-        let swapPixels = tmpPixels ++ (take 1 (repeat pixelsSwap))
-        let j = i
-        let i = j + 1
-        swap pixels swapPixels i x y
-    
+swap pixels = map (\x->swapped x) pixels
 
-    else do
-
-        return (Im x y swapPixels)
-
-swapped :: [a] -> IO [a]
-swapped x = if length x < 2 then return x else do
+swapped pixel = (RGB (sndP pixel) (trdP pixel) (fstP pixel))    
+ 
+swaps :: [a] -> IO [a]
+swaps x = if length x < 2 then return x else do
     i <- randomRIO (0, length(x)-1)
-    r <- swapped (take i x ++ drop (i+1) x)
+    r <- swaps (take i x ++ drop (i+1) x)
     return (x!!i : r)
 
-strips :: Int -> FilePath -> IO [Char] 
-strips n path = do
+strips n image = do
 
-    image <- readJPG path
-    let pixels = trdI image
-    let tmpPixels = chunksOf (fstI image) pixels
+    let tmpPixels = chunksOf (fstI image) (trdI image)
     let pixels = chunksOf ((sndI image) `div` n) tmpPixels
-    pixels <- swapped (pixels)
-    let tmpPixels = concat (map concat pixels)
-    let tmpImage = Im (fstI image) (sndI image) tmpPixels
-    output <- fileName 0
+    tmpPixels <- swaps (pixels)
+    let pixels = concat (map concat tmpPixels)
+    let tmpImage = Im (fstI image) (sndI image) pixels
 
-    writeJPG output tmpImage
+    return tmpImage
 
-    return output
-    
 
-noisy :: FilePath -> IO ()
-noisy path = do
-
-    image <- readJPG path
-    let swapPixels = []
+noisy image = do
 
     let pixels = trdI image
-    picture <- swapNoisy pixels swapPixels 0 (fstI image) (sndI image)
+    pixelNoise <- swapNoisy pixels [] 
 
-    writeJPG path picture
+    return (Im (fstI image) (sndI image) pixelNoise)  
 
+swapNoisy pixels temp = do
 
-swapNoisy :: [Pixel] -> [Pixel] -> Int -> Int -> Int -> IO Image
-swapNoisy pixels swapPixels i x y = do
-
-    if i < length pixels then do
+    if pixels /= [] then do
         
-        let r = fstP (pixels !! i)
-        let g = sndP (pixels !! i)
-        let b = trdP (pixels !! i)
+        let tmpPixels = head pixels
+        let tmp = tail pixels
+        let pixels = tmp
 
         chance <- randomL [0..9]
+        let c = chance
+        let t = temp
 
-        if chance == 0 then do
-        
-            pixel <-  swapped [r, g, b]
-            let pixelsSwap = (RGB (pixel !! 0) (pixel !! 1) (pixel !! 2)) 
-            let tmpPixels = swapPixels
-            let swapPixels = tmpPixels ++ (take 1 (repeat pixelsSwap))
-            let j = i
-            let i = j + 1
-            swap pixels swapPixels i x y
+        if c == 0 then do
+       
+            let temp = t ++ (take 1 (repeat (swapped tmpPixels)))
+            swapNoisy pixels temp
  
 
         else do
-
-            let pixel = [r, g, b]
-            let pixelsSwap = (RGB (pixel !! 0) (pixel !! 1) (pixel !! 2)) 
-            let tmpPixels = swapPixels
-            let swapPixels = tmpPixels ++ (take 1 (repeat pixelsSwap))
-            let j = i
-            let i = j + 1
-            swap pixels swapPixels i x y
+            
+            let temp = t ++ (take 1 (repeat (tmpPixels)))
+            swapNoisy pixels temp 
            
     else do
 
-        return (Im x y swapPixels)
+        return temp
 
 view :: Image -> IO ()
 view image = do
@@ -329,22 +257,19 @@ pictureTime = do
 
     if dfe then do
 
-       picture path
+       image <- readJPG path
+       picture image
 
     else do
 
         putStrLn "The file does not exist, try again"
         pictureTime
 
-picture :: String -> IO ()
-picture path = do
+picture image = do
 
     let specialChar = " !\"#$%&'()*+,-./:;<=>?@^_`{|}~"
     let charList = ['a'..'z']
     let allSpecial = specialChar ++ charList
-    putStrLn "Your current image is:\n"
-    putStrLn path
-    putStrLn "\n"
     putStrLn "Choose an option from the list below:\n"
     putStrLn "View, Image"
     putStrLn "Open, New Image"
@@ -362,9 +287,8 @@ picture path = do
         
     if (map toLower input) == "view" then do
 
-        viewImage <- readJPG path
-        view viewImage
-        picture path
+        view image
+        picture image
 
     else do
 
@@ -379,12 +303,13 @@ picture path = do
 
                 let path = tmpPath ++ ".jpg"
                 putStrLn "Okay I did it"
-                picture path
+                image <- readJPG path
+                picture image
 
             else do 
 
                 putStr "File does not Exist, renter command"
-                picture path
+                picture image
 
         else do
     
@@ -392,11 +317,10 @@ picture path = do
 
                 putStrLn "What would you like to name the file"
                 savePath <- getLine
-                image <- readJPG path
                 let path = (savePath ++ ".jpg")
                 writeJPG path image
                 cleanup
-                picture path
+                picture image
 
             else do
     
@@ -410,14 +334,10 @@ picture path = do
 
                     if (map toLower input) == "swap" then do
                        
-                        tmpPath <- fileName 0
-                        copyFile path tmpPath
-                        colorSwap path
-                        image <- readJPG tmpPath
-                        path <- fileName 0 
-                        writeJPG path image
+                        let imageTmp = colorSwap image
                         putStrLn "Ok all set"
-                        picture path
+                        cleanup
+                        picture imageTmp
  
                     else do
 
@@ -429,14 +349,15 @@ picture path = do
                             if toLower (head input) `elem` allSpecial then do
 
                                 putStrLn "Needs an integer from 0 to 255 try again"
-                                picture path
+                                picture image
 
                             else do
 
-                                let delta = (-1) * (read input :: Int)
-                                darken delta path
+                                let delta = (read input :: Int)
+                                let imageTmp = darken delta image
                                 putStrLn "Ok all set"
-                                picture path
+                                cleanup
+                                picture imageTmp
  
                         else do
 
@@ -448,33 +369,33 @@ picture path = do
                                 if toLower (head input) `elem` allSpecial then do
 
                                     putStrLn "Needs an integer from 0 to 255 try again"
-                                    picture path
+                                    picture image
 
                                 else do
                                 
-                                    let delta = abs (read input :: Int)
-                                    darken delta path
+                                    let delta = (-1) * (read input :: Int)
+                                    let imageTmp = darken delta image
+                                    cleanup
                                     putStrLn "Ok all set"
-                                    picture path
+                                    picture imageTmp
  
                             else do
 
                                 if (map toLower input) == "noisy" then do
                                     
-                                    noisy path
+                                    imageTmp <- noisy image
+                                    cleanup
                                     putStrLn "Ok all set"
-                                    picture path
+                                    picture imageTmp
  
                                 else do
 
                                     if (map toLower input) == "rotate" then do
-
-                                        image <- readJPG path
+                            
                                         let imageTmp = rotate image
-                                        path <- fileName 0
-                                        writeJPG path imageTmp
+                                        cleanup
                                         putStrLn "ok all set"
-                                        picture path
+                                        picture imageTmp
                                     
                                     else do 
 
@@ -487,7 +408,7 @@ picture path = do
                                             if toLower (head r) `elem` allSpecial then do
 
                                                 putStrLn "Needs an integer from 0 to 255 try again"
-                                                picture path 
+                                                picture image 
 
                                             else do
 
@@ -497,7 +418,7 @@ picture path = do
                                                 if toLower (head g) `elem` allSpecial then do
 
                                                     putStrLn "Needs an integer from 0 to 255 try again"
-                                                    picture path
+                                                    picture image
 
                                                 else do
 
@@ -507,7 +428,7 @@ picture path = do
                                                     if toLower (head b) `elem` allSpecial then do
 
                                                         putStrLn "Needs an integer try again"
-                                                        picture path
+                                                        picture image
 
                                                     else do
                                             
@@ -517,18 +438,15 @@ picture path = do
                                                         if toLower (head n) `elem` allSpecial then do
 
                                                             putStrLn "Needs an integer try again"
-                                                            picture path
+                                                            picture image
 
                                                         else do
 
-
                                                             let pixel = (RGB (read r::Int) (read g::Int) (read b::Int))
-                                                            image <- readJPG path
                                                             let imageTmp = thickBorder image pixel (read n::Int) 
-                                                            path <- fileName 0
-                                                            writeJPG path imageTmp
+                                                            cleanup
                                                             putStrLn "Ok all set"
-                                                            picture path
+                                                            picture imageTmp
  
                                         else do
 
@@ -536,14 +454,23 @@ picture path = do
                                             
                                                 putStrLn "How many strips would you like?"
                                                 n <- getLine
-                                                path <- strips (read n::Int) path
-                                                putStrLn "okay I did it"
-                                                picture path
+
+                                                if toLower (head n) `elem` allSpecial then do
+
+                                                    putStrLn "Needs an integer try again"
+                                                    picture image
+
+                                                else do
+
+                                                    imageTmp <- strips (read n::Int) image
+                                                    putStrLn "okay I did it"
+                                                    cleanup
+                                                    picture imageTmp
 
                                             else do
                                             
                                                 putStrLn "I don't understand"
-                                                picture path
+                                                picture image
 
 
 
